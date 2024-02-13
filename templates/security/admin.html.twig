@@ -1,0 +1,355 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+{#{%  include ("headers.html.twig") %}#}
+<div class="container-fluid">
+    <div class="row">
+    <div class="col-2 bg-warning">
+        <div class="mt-4 mx-2 fs-3 justify-content-center"><b>ADMIN PANEL</b></div>
+        <div class="accordion my-2" id="accordionPanelsStayOpenExample">
+            <div class="accordion-item">
+                <h2 class="accordion-header mt-3 fs-4" id="panelsStayOpen-headingOne">
+                    <button id="reports" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
+                        <strong>REPORTS</strong>
+                    </button>
+                </h2>
+                <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse " aria-labelledby="panelsStayOpen-headingOne">
+                    <div class="accordion-body">
+                        <strong><a class="text-decoration-none" role="button" id="apptReportView" >Appointments Report</a></strong>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+                        Something else...
+                    </button>
+                </h2>
+                <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingTwo">
+                    <div class="accordion-body">
+                        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-9 mx-2" hidden id="apptReport">
+        <div class="mt-4 fs-4 fw-bold">Appointment Report:</div>
+        <div><a class="btn btn-primary" id="reset">Reset selection</a></div>
+        <div class="mt-4 fw-light">{%  include 'security/apptReport.html.twig' %}</div>
+    </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#reset').click(function(e) {
+            e.preventDefault();
+            $( "option" ).remove();
+            $( "tr" ).remove( ".datarow" );
+
+            $.ajax({
+                url: '{{ path('getAllAppointmentsData') }}',
+                method: 'post',
+                dataType: 'json',
+                success: function (response) {
+                    // Parse the response as JSON
+                    apptData = response;
+
+                    $.each(apptData, function(key, data){
+                        $('.tbody').append(
+                            '<tr class="datarow">'+
+                            '<th scope="row" id="counter">'+ (key+1) +'</th>'+
+                            '<td class="apptDate" id="apptDate'+(key+1)+'">'+ data.date +'</td>'+
+                            '<td class="apptTime" id="apptTime'+(key+1)+'">'+ data.time +'</td>'+
+                            '<td class="fn" id="fn'+(key+1)+'">'+ data.first_name +'</td>'+
+                            '<td class="ln" id="ln'+(key+1)+'">'+ data.last_name +'</td>'+
+                            '<td class="email" id="email'+(key+1)+'">'+ data.email +'</td>'+
+                            '<td id="phone">'+ data.phone +'</td>'+
+                            '<td id="msg">'+ data.message +'</td>'+
+                            '</tr>'
+                        )
+                    })
+                    let dateFilters = []
+                    $('.apptDate').each(function (key) {
+                        let currentDate = $('#apptDate' + (key + 1)).text();
+
+                        if (dateFilters.indexOf(currentDate) === -1) {
+                            dateFilters.push(currentDate);
+                        }
+                    });
+                    dateFilters.sort()
+                    $.each(dateFilters, function(key, ApptDateData){
+                        $('.filterApptDate').append(
+                            '<option class="dateFilters" >'+ApptDateData+'</option>'
+                        )
+                    })
+
+                    let timeFilters = []
+                    $('.apptTime').each(function (key) {
+                        let currentTime = $('#apptTime' + (key + 1)).text();
+
+                        if (timeFilters.indexOf(currentTime) === -1) {
+                            timeFilters.push(currentTime);
+                        }
+                    });
+                    timeFilters.sort()
+                    $.each(timeFilters, function(key, ApptTimeData){
+                        $('.filterApptTime').append(
+                            '<option class="timeFilters" >'+ApptTimeData+'</option>'
+                        )
+                    })
+
+                    let FNFilters = []
+                    $('.fn').each(function (key) {
+                        let currentFN = $('#fn' + (key + 1)).text();
+
+                        if (FNFilters.indexOf(currentFN) === -1) {
+                            FNFilters.push(currentFN);
+                        }
+                    });
+                    FNFilters.sort()
+                    $.each(FNFilters, function(key, ApptFNData){
+                        $('.filterFN').append(
+                            '<option class="FNFilters" >'+ApptFNData+'</option>'
+                        )
+                    })
+
+                    let LNFilters = []
+                    $('.ln').each(function (key) {
+                        let currentLN = $('#ln' + (key + 1)).text();
+
+                        if (LNFilters.indexOf(currentLN) === -1) {
+                            LNFilters.push(currentLN);
+                        }
+                    });
+                    LNFilters.sort()
+                    $.each(LNFilters, function(key, ApptLNData){
+                        $('.filterLN').append(
+                            '<option class="LNFilters" >'+ApptLNData+'</option>'
+                        )
+                    })
+
+                    let emailFilters = []
+                    $('.email').each(function (key) {
+                        let currentEmail = $('#email' + (key + 1)).text();
+
+                        if (emailFilters.indexOf(currentEmail) === -1) {
+                            emailFilters.push(currentEmail);
+                        }
+                    });
+                    emailFilters.sort()
+                    $.each(emailFilters, function(key, ApptEmailData){
+                        $('.filterEmail').append(
+                            '<option class="emailFilters" >'+ApptEmailData+'</option>'
+                        )
+                    })
+                },
+                error: function () {
+                    alert('Error retrieving appointment data.');
+                }
+            })
+
+        })
+
+        $('#apptReportView').click(function(e){
+            e.preventDefault();
+
+            if ($('#apptReport').attr('hidden')){
+                $('#apptReport').removeAttr("hidden")
+
+                $.ajax({
+                    url: '{{ path('getAllAppointmentsData') }}',
+                    method: 'post',
+                    dataType: 'json',
+                    success: function (response) {
+                        // Parse the response as JSON
+                        apptData = response;
+
+                        $.each(apptData, function(key, data){
+                                $('.tbody').append(
+                                '<tr class="datarow">'+
+                                '<th scope="row" id="counter">'+ (key+1) +'</th>'+
+                                '<td class="apptDate" id="apptDate'+(key+1)+'">'+ data.date +'</td>'+
+                                '<td class="apptTime" id="apptTime'+(key+1)+'">'+ data.time +'</td>'+
+                                '<td class="fn" id="fn'+(key+1)+'">'+ data.first_name +'</td>'+
+                                '<td class="ln" id="ln'+(key+1)+'">'+ data.last_name +'</td>'+
+                                '<td class="email" id="email'+(key+1)+'">'+ data.email +'</td>'+
+                                '<td id="phone">'+ data.phone +'</td>'+
+                                '<td id="msg">'+ data.message +'</td>'+
+                                '</tr>'
+                            )
+                        })
+                        $( "option" ).remove();
+                        let dateFilters = []
+                        $('.apptDate').each(function (key) {
+                            let currentDate = $('#apptDate' + (key + 1)).text();
+
+                            if (dateFilters.indexOf(currentDate) === -1) {
+                                dateFilters.push(currentDate);
+                            }
+                        });
+                        dateFilters.sort()
+                        $.each(dateFilters, function(key, ApptDateData){
+                            $('.filterApptDate').append(
+                                '<option class="dateFilters'+ (key+1) +'" >'+ApptDateData+'</option>'
+                            )
+                        })
+
+                        let timeFilters = []
+                        $('.apptTime').each(function (key) {
+                            let currentTime = $('#apptTime' + (key + 1)).text();
+
+                            if (timeFilters.indexOf(currentTime) === -1) {
+                                timeFilters.push(currentTime);
+                            }
+                        });
+                        timeFilters.sort()
+                        $.each(timeFilters, function(key, ApptTimeData){
+                            $('.filterApptTime').append(
+                                '<option class="timeFilters'+ (key+1) +'" >'+ApptTimeData+'</option>'
+                            )
+                        })
+
+                        let FNFilters = []
+                        $('.fn').each(function (key) {
+                            let currentFN = $('#fn' + (key + 1)).text();
+
+                            if (FNFilters.indexOf(currentFN) === -1) {
+                                FNFilters.push(currentFN);
+                            }
+                        });
+                        FNFilters.sort()
+                        $.each(FNFilters, function(key, ApptFNData){
+                            $('.filterFN').append(
+                                '<option class="FNFilters'+ (key+1) +'">'+ApptFNData+'</option>'
+                            )
+                        })
+
+                        let LNFilters = []
+                        $('.ln').each(function (key) {
+                            let currentLN = $('#ln' + (key + 1)).text();
+
+                            if (LNFilters.indexOf(currentLN) === -1) {
+                                LNFilters.push(currentLN);
+                            }
+                        });
+                        LNFilters.sort()
+                        $.each(LNFilters, function(key, ApptLNData){
+                            $('.filterLN').append(
+                                '<option class="LNFilters'+ (key+1) +'">'+ApptLNData+'</option>'
+                            )
+                        })
+
+                        let emailFilters = []
+                        $('.email').each(function (key) {
+                            let currentEmail = $('#email' + (key + 1)).text();
+
+                            if (emailFilters.indexOf(currentEmail) === -1) {
+                                emailFilters.push(currentEmail);
+                            }
+                        });
+                        emailFilters.sort()
+                        $.each(emailFilters, function(key, ApptEmailData){
+                            $('.filterEmail').append(
+                                '<option class="emailFilters'+ (key+1) +'">'+ApptEmailData+'</option>'
+                            )
+                        })
+                    },
+                    error: function () {
+                        alert('Error retrieving appointment data.');
+                    }
+                })
+
+            } else {
+                $('#apptReport').prop("hidden", true)
+                $( "tr" ).remove( ".datarow" );
+            }
+        })
+
+        $('#reports').click(function(e){
+            e.preventDefault();
+            $('#apptReport').prop("hidden", true)
+            $( "tr" ).remove( ".datarow" );
+        })
+
+        $('.js-example-basic-multiple').select2();
+
+
+        $('.filters').change(function(e){
+            e.preventDefault();
+
+            let filter1 = $('#filterApptDate').select2('data')
+            let dataF1 = $.map(filter1, function (key, value) {
+                if (key !== null){
+                    return key.id+[]
+                }
+            });
+
+            let filter2 = $('#filterApptTime').select2('data')
+            let dataF2 = $.map(filter2, function (key, value) {
+                if (key !== null){
+                    return key.id+[]
+                }
+            });
+            // console.log(filter2)
+
+            let filter3 = $('#filterFN').select2('data')
+            let dataF3 = $.map(filter3, function (key, value) {
+                if (key !== null){
+                    return key.id+[]
+                }
+            });
+
+            let filter4 = $('#filterLN').select2('data')
+            let dataF4 = $.map(filter4, function (key, value) {
+                if (key !== null){
+                    return key.id+[]
+                }
+            });
+
+            let filter5 = $('#filterEmail').select2('data')
+            let dataF5 = $.map(filter5, function (key, value) {
+                if (key !== null){
+                    return key.id+[]
+                }
+            });
+
+            $.ajax({
+                url: '{{ path('filter_results') }}',
+                method: 'post',
+                data: { filter1: dataF1, filter2: dataF2, filter3: dataF3, filter4: dataF4, filter5: dataF5} ,
+                dataType: 'json',
+
+                success: function (response) {
+                    // Process the response and display the results
+                    filterResults = response;
+
+                    $( "tr" ).remove( ".datarow" );
+                    filterResults.sort()
+                    $.each(filterResults, function(key, data){
+                        $('.tbody').append(
+                            '<tr class="datarow">'+
+                            '<th scope="row" id="counter">'+ (key+1) +'</th>'+
+                            '<td class="apptDate" id="apptDate'+(key+1)+'">'+ data.date +'</td>'+
+                            '<td class="apptTime" id="apptTime'+(key+1)+'">'+ data.time +'</td>'+
+                            '<td class="fn" id="fn'+(key+1)+'">'+ data.first_name +'</td>'+
+                            '<td class="ln" id="ln'+(key+1)+'">'+ data.last_name +'</td>'+
+                            '<td class="email" id="email'+(key+1)+'">'+ data.email +'</td>'+
+                            '<td id="phone">'+ data.phone +'</td>'+
+                            '<td id="msg">'+ data.message +'</td>'+
+                            '</tr>'
+                        )
+                    })
+                },
+                error: function () {
+                    alert('Error retrieving filter results.');
+                }
+            });
+        })
+    })
+</script>
+
+{% endblock %}
+

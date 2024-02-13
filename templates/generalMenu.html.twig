@@ -1,0 +1,41 @@
+<div class="container-fluid bg-light bg-gradient text-dark fs-4 p-2 text-dark bg-opacity-25">
+    <div class="d-flex justify-content-evenly">AppointmentAPP</div>
+</div>
+<div class="container-fluid bg-info p-2 text-dark bg-opacity-25">
+    <div class="container my-2 ">
+        <div class="row d-flex justify-content-evenly">
+            <div class="col-2 d-flex justify-content-evenly">
+                <a class="text-decoration-none fs-3" href="{{ url('homepage') }}">HOME</a>
+            </div>
+            <div class="col-2 d-flex justify-content-evenly">
+                <a class="text-decoration-none fs-3" href="{{ url('appointment') }}">APPOINTMENT</a>
+            </div>
+            <div class="col-2 d-flex justify-content-evenly">
+                <a class="text-decoration-none fs-3" href="#">SERVICES</a>
+            </div>
+            <div class="col-2 d-flex justify-content-evenly">
+                <a class="text-decoration-none fs-3" href="#">ABOUT</a>
+            </div>
+
+            {% if app.user.isAdmin()|default == 'ROLE_ADMIN' %}
+                <div class="col-2 d-flex justify-content-evenly">
+                    <a class="text-decoration-none fs-3" href="{{ path('admin_panel') }}">ADMIN PANEL</a>
+                </div>
+            {% endif %}
+
+            {% if app.user %}
+                <div class="col-2 d-flex justify-content-evenly">
+                    Welcome, {{ app.user.username }} <a href="{{ path('app_logout') }}">Logout</a>
+                </div>
+            {% else %}
+                <div class="col-2 d-flex justify-content-evenly">
+                    <a class="text-decoration-none fs-3" href="{{ url('app_login') }}">LOGIN</a>
+                </div>
+                <div class="col-2 d-flex justify-content-evenly">
+                    <a class="text-decoration-none fs-3" href="{{ url('app_register') }}">REGISTER</a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,214 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row my-5 d-flex justify-content-evenly ">
+            <div class="col-8 ">
+                <form method="post" action="{{ url('updateAppt') }}">
+                    <div class="row ">
+                        <div class="col">
+                            <input type="text" name="first_name" id="first_name" required class="form-control"
+                                   placeholder="First name" aria-label="First name">
+                        </div>
+                        <div class="col">
+                            <input type="text" name="last_name" id="last_name" required class="form-control"
+                                   placeholder="Last name" aria-label="Last name">
+                        </div>
+                    </div>
+                    <div class="row my-3">
+                        <div class="col">
+                            <input type="email" name="email" id="email" required class="form-control" placeholder="Email"
+                                   aria-label="Email">
+                        </div>
+                        <div class="col">
+                            <input type="number" name="phone" id="phone" required class="form-control" placeholder="Phone"
+                                   aria-label="Phone">
+                        </div>
+                    </div>
+                    <div class="row my-3">
+                        <div class="col">
+                            <textarea type="text" name="message" id="message" required class="form-control" placeholder="Message"
+                                      aria-label="Email"></textarea>
+                        </div>
+                    </div>
+                    <div class="row my-3">
+                        <div class="col">
+                            <label class="fs-5" for="datepicker">Select a date:</label>
+                            <input type="text" name="dp" id="datepicker" placeholder="Date" readonly>
+                        </div>
+                        <input hidden class="btn" name="chosenTime" type="time" id="chosenTime" >
+                    </div>
+                    <div hidden class="row my-3" id="selectTime">
+                        <div class="col">
+                            <div class="my-3 fs-5">Select a time:</div>
+                            {% for i in 1..16 %}
+                                <button onclick="event.preventDefault()" class="btn btn-info mx-2 my-2 tp" name="tp{{ i }}" type="" id="tp{{ i }}"></button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row my-3">
+                        <div class="col">
+                            <button class="btn btn-warning" id="submit" type="submit">SUBMIT</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // e.preventDefault()
+
+            let enabledHours = ['', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
+
+            for (let i = 1; i <= enabledHours.length; i++) {
+                $('#tp' + i).text(enabledHours[i]);
+                $('#tp' + i).val(enabledHours[i]);
+            }
+
+            function DisableButton(e) {
+                e.preventDefault();
+                return false
+            }
+
+            let appointmentData = []
+
+            let today = moment().format('DD.MM.YYYY');
+
+            function countAppointments(date){
+                let count = 0;
+                appointmentData.forEach(function(appointmentDate) {
+                    if (date.getFullYear() === moment(appointmentDate).year() &&
+                        date.getMonth() === moment(appointmentDate).month() &&
+                        date.getDate() === moment(appointmentDate).date()) {
+                        count++;
+                    }
+                });
+                return count;
+            }
+
+            //Initialize datepicker
+            $('#datepicker').datepicker({
+                dateFormat: 'dd.mm.yy',
+                minDate: today,
+                showAnim: "fadeIn",
+
+
+                beforeShowDay: function (date) {
+                    // Disable weekends
+                    let day = date.getDay();
+                    minDate: today;
+                    return [(day > 0 && day < 6)];
+                }
+            });
+
+            $('#datepicker').val(today);
+            let apptDate = $('#datepicker').val()
+
+            $('#datepicker').change(function () {
+                $('#datepicker').css("background-color", "");
+                apptDate = $('#datepicker').val()
+                let selectedDate = $('#datepicker').datepicker('getDate');
+                let dateString = $.datepicker.formatDate('dd.mm.yy', selectedDate);
+
+                $.ajax({
+                    url: '{{ path('getAppointmentData') }}',
+                    method: 'post',
+                    data: {date: dateString},
+                    dataType: 'json',
+                    success: function (response) {
+                        // Parse the response as JSON
+                        appointmentData = response;
+                        $('.tp').css("background-color", "");
+                        $('.tp').prop("disabled", false);
+
+                        $.each(appointmentData, function(key, data){
+                            let disabledTimesId = $(".tp").map(function(value, key){
+                                if (this.value == data.time)
+                                {
+                                    return $(this).attr('id')
+                                }})
+                            if (apptDate == data.date){
+                                $('#' + disabledTimesId[0]).css("background-color", "red");
+                                $('#' + disabledTimesId[0]).prop( "disabled", true);
+                            }
+                        })
+
+                        $('#datepicker').css("background-color", "yellow");
+                        $('#selectTime').removeAttr("hidden")
+                    },
+                    error: function () {
+                        alert('Error retrieving appointment data.');
+                    }
+                })
+                });
+
+            let firstName = $('#first_name').val()
+            $('#first_name').change(function () {
+                firstName = $('#first_name').val()
+            });
+
+            let lastName = $('#last_name').val()
+            $('#last_name').change(function () {
+                lastName = $('#last_name').val()
+            });
+
+            let email = $('#email').val()
+            $('#email').change(function () {
+                email = $('#email').val()
+            });
+
+            let phone = $('#phone').val()
+            $('#phone').change(function () {
+                phone = $('#phone').val()
+            });
+
+            let appTimeId = ''
+            let apptTime = ''
+            $('.tp').click(function () {
+                // Retrieve the value of the button's 'value' attribute
+                $.each($('.tp'), function(){
+                    if ($(this).prop("disabled") == true){
+                        $(this).css("background-color", "red");
+                    } else {
+                        $(this).css("background-color", "#0dcaf0");
+                    }
+                })
+
+                appTimeId = $(this).attr('id')
+                apptTime = $('#' + appTimeId).val()
+                $('#chosenTime').val(apptTime)
+
+                if ($(this).css("background-color") == "rgb(255, 255, 0)" ){
+                    $('#'+ $(this).attr('id')).css("background-color","#0dcaf0")
+                } else {
+                    $(this).css("background-color", "yellow");
+                }
+            });
+
+            $('#submit').click(function (e) {
+                e.click.preventDefault()
+
+                apptDate = $('#datepicker').val()
+                chosenTime = $('#chosenTime').val()
+
+                $.ajax({
+                    url: "{{ url('updateAppt') }}",
+                    type: "post",
+                    data: {
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        phone: phone,
+                        apptDate: apptDate,
+                        chosenTime: chosenTime,
+
+                    },
+                });
+            });
+        });
+    </script>
+
+{% endblock %}

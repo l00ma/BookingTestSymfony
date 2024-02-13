@@ -1,0 +1,13 @@
+#index:
+#    path: /
+#    controller: App\Controller\AbstractController::index
+
+updateAppt:
+  path: /updateAppt
+  controller: App\Controller\AppointmentController::updateAppt
+  methods: ['POST']
+
+getAppointmentData:
+  path: /getAppointmentData
+  controller: App\Controller\AppointmentController::getAppointmentData
+  methods: [ 'POST' ]
